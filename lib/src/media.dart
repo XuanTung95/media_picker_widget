@@ -2,38 +2,21 @@ part of media_picker_widget;
 
 ///This class will contain the necessary data of selected media
 class Media {
-  ///File saved on local storage
-  File? file;
-
   ///Unique id to identify
-  String? id;
+  String get id => assetEntity.id;
 
   ///A low resolution image to show as preview
   Uint8List? thumbnail;
 
-  ///The image file in bytes format
-  Uint8List? mediaByte;
-
-  ///Image Dimensions
-  Size? size;
-
-  ///Creation time of the media file on local storage
-  DateTime? creationTime;
-
-  ///media name or title
-  String? title;
-
   ///Type of the media, Image/Video
-  MediaType? mediaType;
+  final MediaType mediaType;
+
+  ///The abstraction of assets (images/videos/audios).
+  final AssetEntity assetEntity;
 
   Media({
-    this.id,
-    this.file,
+    required this.assetEntity,
+    required this.mediaType,
     this.thumbnail,
-    this.mediaByte,
-    this.size,
-    this.creationTime,
-    this.title,
-    this.mediaType,
   });
 }

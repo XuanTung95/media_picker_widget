@@ -44,6 +44,17 @@ class _MediaTileState extends State<MediaTile>
     selected = widget.isSelected;
     if (selected!) _animationController!.forward();
     super.initState();
+    convertToMedia(media: widget.media).then((_media) {
+      if (mounted) {
+        setState(() => media = _media);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _animationController?.dispose();
+    super.dispose();
   }
 
   @override
@@ -155,8 +166,6 @@ class _MediaTileState extends State<MediaTile>
         ),
       );
     } else {
-      convertToMedia(media: widget.media)
-          .then((_media) => setState(() => media = _media));
       return LoadingWidget(
         decoration: widget.decoration!,
       );
@@ -168,20 +177,11 @@ class _MediaTileState extends State<MediaTile>
 }
 
 Future<Media> convertToMedia({required AssetEntity media}) async {
-  Media convertedMedia = Media();
-  convertedMedia.file = await media.file;
-  convertedMedia.mediaByte = await media.originBytes;
-  convertedMedia.thumbnail =
-      await media.thumbnailDataWithSize(ThumbnailSize(200, 200));
-  convertedMedia.id = media.id;
-  convertedMedia.size = media.size;
-  convertedMedia.title = media.title;
-  convertedMedia.creationTime = media.createDateTime;
-
   MediaType mediaType = MediaType.all;
   if (media.type == AssetType.video) mediaType = MediaType.video;
   if (media.type == AssetType.image) mediaType = MediaType.image;
-  convertedMedia.mediaType = mediaType;
-
+  Media convertedMedia = Media(assetEntity: media, mediaType: mediaType);
+  convertedMedia.thumbnail =
+      await media.thumbnailDataWithSize(ThumbnailSize(200, 200));
   return convertedMedia;
 }

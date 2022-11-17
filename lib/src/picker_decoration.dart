@@ -35,6 +35,9 @@ class PickerDecoration {
   ///loading widget to be used as media place holder until media loads
   Widget? loadingWidget;
 
+  ///placeholder widget to be used when there is no media available
+  Widget? noMediaWidget;
+
   ///PickerDecoration constructor to be used for decorating the UI
   PickerDecoration({
     this.actionBarPosition = ActionBarPosition.top,
@@ -48,5 +51,6 @@ class PickerDecoration {
     this.loadingWidget,
     this.albumTextStyle,
     this.albumCountTextStyle,
+    this.noMediaWidget,
   });
 }

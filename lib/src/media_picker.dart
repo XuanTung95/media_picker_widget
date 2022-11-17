@@ -11,6 +11,8 @@ class MediaPicker extends StatefulWidget {
     this.mediaType = MediaType.all,
     this.decoration,
     this.scrollController,
+    this.customWidgets,
+    this.getAlbumName,
   });
 
   ///CallBack on image pick is done
@@ -34,6 +36,11 @@ class MediaPicker extends StatefulWidget {
   ///assign a scroll controller to Media GridView of Picker
   final ScrollController? scrollController;
 
+  ///Custom widgets to add to the grid
+  final List<Widget>? customWidgets;
+
+  final String Function(String)? getAlbumName;
+
   @override
   _MediaPickerState createState() => _MediaPickerState();
 }
@@ -41,8 +48,8 @@ class MediaPicker extends StatefulWidget {
 class _MediaPickerState extends State<MediaPicker> {
   PickerDecoration? _decoration;
 
-  AssetPathEntity? _selectedAlbum;
-  List<AssetPathEntity>? _albums;
+  AlbumEntity? _selectedAlbum;
+  List<AlbumEntity>? _albums;
 
   final PanelController _albumController = PanelController();
   final HeaderController _headerController = HeaderController();
@@ -63,7 +70,7 @@ class _MediaPickerState extends State<MediaPicker> {
               decoration: widget.decoration!,
             )
           : _albums!.length == 0
-              ? NoMedia()
+              ? (_decoration?.noMediaWidget ?? NoMedia())
               : Column(
                   children: [
                     if (_decoration!.actionBarPosition == ActionBarPosition.top)
@@ -79,6 +86,7 @@ class _MediaPickerState extends State<MediaPicker> {
                             mediaCount: widget.mediaCount,
                             decoration: widget.decoration,
                             scrollController: widget.scrollController,
+                            customWidgets: widget.customWidgets,
                           ),
                         ),
                         AlbumSelector(
@@ -89,6 +97,7 @@ class _MediaPickerState extends State<MediaPicker> {
                             _headerController.closeAlbumDrawer!();
                             setState(() => _selectedAlbum = album);
                           },
+                          getAlbumName: widget.getAlbumName
                         ),
                       ],
                     )),
@@ -109,6 +118,7 @@ class _MediaPickerState extends State<MediaPicker> {
       controller: _headerController,
       mediaCount: widget.mediaCount,
       decoration: _decoration,
+      getAlbumName: widget.getAlbumName,
     );
   }
 
@@ -118,16 +128,26 @@ class _MediaPickerState extends State<MediaPicker> {
       type = RequestType.common;
     else if (widget.mediaType == MediaType.video)
       type = RequestType.video;
-    else if (widget.mediaType == MediaType.image) type = RequestType.image;
+    else if (widget.mediaType == MediaType.image)
+      type = RequestType.image;
 
     PermissionState result = await PhotoManager.requestPermissionExtend();
     if (result == PermissionState.authorized ||
         result == PermissionState.limited) {
       List<AssetPathEntity> albums =
           await PhotoManager.getAssetPathList(type: type);
+      List<AlbumEntity> albumsConvert = [];
+      for (var item in albums) {
+        final assetCount = await item.assetCountAsync;
+        if (assetCount > 0) {
+          albumsConvert.add(AlbumEntity(entity: item, assetCount: assetCount,));
+        }
+      }
       setState(() {
-        _albums = albums;
-        _selectedAlbum = _albums![0];
+        _albums = albumsConvert;
+        if (albumsConvert.isNotEmpty) {
+          _selectedAlbum = _albums![0];
+        }
       });
     } else {
       PhotoManager.openSetting();
@@ -139,27 +159,5 @@ class _MediaPickerState extends State<MediaPicker> {
       _albumController.close();
     else
       widget.onCancel();
-  }
-}
-
-///call this function to capture and get media from camera
-openCamera(
-    {
-
-    ///callback when capturing is done
-    required ValueChanged<Media> onCapture}) async {
-  final ImagePicker _picker = ImagePicker();
-  final XFile? pickedFile = await _picker.pickImage(source: ImageSource.camera);
-
-  if (pickedFile != null) {
-    Media converted = Media(
-      id: UniqueKey().toString(),
-      thumbnail: await pickedFile.readAsBytes(),
-      creationTime: DateTime.now(),
-      mediaByte: await pickedFile.readAsBytes(),
-      title: 'capturedImage',
-    );
-
-    onCapture(converted);
   }
 }

@@ -5,6 +5,7 @@ import 'package:photo_manager/photo_manager.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 
 import '../media_picker_widget.dart';
+import 'album_entity.dart';
 import 'header_controller.dart';
 import 'widgets/jumping_button.dart';
 
@@ -17,15 +18,17 @@ class Header extends StatefulWidget {
     required this.controller,
     this.mediaCount,
     this.decoration,
+    this.getAlbumName,
   });
 
-  final AssetPathEntity selectedAlbum;
+  final AlbumEntity selectedAlbum;
   final VoidCallback onBack;
   final PanelController albumController;
   final ValueChanged<List<Media>> onDone;
   final HeaderController controller;
   final MediaCount? mediaCount;
   final PickerDecoration? decoration;
+  final String Function(String)? getAlbumName;
 
   @override
   _HeaderState createState() => _HeaderState();
@@ -96,7 +99,7 @@ class _HeaderState extends State<Header> with TickerProviderStateMixin {
                         );
                       },
                       child: Text(
-                        widget.selectedAlbum.name,
+                        widget.getAlbumName == null ? widget.selectedAlbum.entity.name : widget.getAlbumName!.call(widget.selectedAlbum.entity.name),
                         style: widget.decoration!.albumTitleStyle,
                         key: ValueKey<String>(widget.selectedAlbum.id),
                       ),

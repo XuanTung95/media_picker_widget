@@ -81,9 +81,12 @@ class _JumpingButtonState extends State<JumpingButton>
       },
       child: GestureDetector(
         onTap: enabled ? widget.onTap : null,
-        child: Transform.scale(
-          scale: _scale,
-          child: child,
+        child: ColoredBox(
+          color: Colors.transparent,
+          child: Transform.scale(
+            scale: _scale,
+            child: child,
+          ),
         ),
       ),
     );
